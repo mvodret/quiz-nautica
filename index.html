@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2E86AB">
+    <title>Quiz Nautica</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚢 Quiz Nautica</h1>
+            <p>Patente Nautica - Ricerca per parole chiave</p>
+        </header>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Scrivi una parola chiave (es: diesel, vento, lunghezza...)">
+            <button id="searchBtn">🔍 Cerca</button>
+            <button id="clearBtn">🗑️ Pulisci</button>
+        </div>
+        
+        <div id="results-info" class="results-info"></div>
+        
+        <div id="quiz-container" class="quiz-container">
+            <div class="welcome-message">
+                <h2>Benvenuto! 👋</h2>
+                <p>Cerca una parola chiave per trovare i quiz correlati.</p>
+                <p>Hai a disposizione <strong>1472 quiz</strong> della patente nautica.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="quiz_data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

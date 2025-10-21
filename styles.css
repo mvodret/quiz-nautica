@@ -139,6 +139,15 @@ header p {
     margin-bottom: 15px;
 }
 
+.quiz-figure {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+    border: 2px dashed #2E86AB;
+}
+
 .quiz-options {
     display: flex;
     flex-direction: column;

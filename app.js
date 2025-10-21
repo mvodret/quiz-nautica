@@ -89,6 +89,14 @@ class QuizApp {
     }
     
     createQuizCard(quiz) {
+        // Crea l'HTML per l'immagine se presente
+        const figureHtml = quiz.figure ? `
+            <div class="quiz-figure">
+                <strong style="color: #2E86AB;"> </strong>
+                <img src="${quiz.figure.data}" alt="Figura quiz" style="max-width: 100%; height: auto; border-radius: 8px; margin-top: 10px;">
+            </div>
+        ` : '';
+        
         const optionsHtml = quiz.options.map((option, index) => {
             const letter = String.fromCharCode(65 + index); // A, B, C
             const correctClass = option.correct ? 'correct' : '';
@@ -103,14 +111,17 @@ class QuizApp {
             `;
         }).join('');
         
+        const hasImage = quiz.figure ? '🖼️' : '';
+        
         return `
             <div class="quiz-card">
                 <div class="quiz-header">
-                    🚢 Quiz ${quiz.id}
+                    🚢 Quiz ${quiz.id} ${hasImage}
                 </div>
                 <div class="quiz-question">
                     ${quiz.question}
                 </div>
+                ${figureHtml}
                 <div class="quiz-options">
                     ${optionsHtml}
                 </div>

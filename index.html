@@ -1,30 +1,52 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+    <!-- Meta tags essenziali -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#2E86AB">
+    
+    <!-- Titolo e descrizione -->
     <title>Quiz Nautica</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="description" content="App per quiz patente nautica con ricerca per parole chiave">
+    
+    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- Icone per diverse piattaforme -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    
+    <!-- Meta tags iOS per PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Quiz Nautica">
+    
+    <!-- Collegamenti a file esterni -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
+        <!-- HEADER: Titolo e descrizione -->
         <header>
             <h1>🚢 Quiz Nautica</h1>
             <p>Patente Nautica - Ricerca per parole chiave</p>
         </header>
         
+        <!-- SEARCH: Barra di ricerca -->
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Scrivi una parola chiave (es: diesel, vento, lunghezza...)">
             <button id="searchBtn">🔍 Cerca</button>
             <button id="clearBtn">🗑️ Pulisci</button>
         </div>
         
+        <!-- INFO: Risultati della ricerca -->
         <div id="results-info" class="results-info"></div>
         
+        <!-- CONTENT: Container principale per i quiz -->
         <div id="quiz-container" class="quiz-container">
+            <!-- Messaggio di benvenuto iniziale -->
             <div class="welcome-message">
                 <h2>Benvenuto! 👋</h2>
                 <p>Cerca una parola chiave per trovare i quiz correlati.</p>
@@ -33,7 +55,8 @@
         </div>
     </div>
     
-    <script src="quiz_data.js"></script>
-    <script src="app.js"></script>
+    <!-- SCRIPTS: File JavaScript -->
+    <script src="quiz_data.js"></script>  <!-- Dati dei quiz -->
+    <script src="app.js"></script>        <!-- Logica applicazione -->
 </body>
 </html>

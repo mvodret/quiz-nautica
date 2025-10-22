@@ -1,3 +1,4 @@
+/* RESET E BASE STYLES */
 * {
     margin: 0;
     padding: 0;
@@ -11,12 +12,14 @@ body {
     color: #333;
 }
 
+/* LAYOUT PRINCIPALE */
 .container {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
 }
 
+/* HEADER SECTION */
 header {
     text-align: center;
     margin-bottom: 30px;
@@ -34,6 +37,7 @@ header p {
     opacity: 0.9;
 }
 
+/* SEARCH CONTAINER */
 .search-container {
     background: white;
     padding: 20px;
@@ -42,6 +46,7 @@ header p {
     margin-bottom: 20px;
 }
 
+/* INPUT DI RICERCA */
 #searchInput {
     width: 100%;
     padding: 15px;
@@ -57,6 +62,7 @@ header p {
     box-shadow: 0 0 0 3px rgba(46, 134, 171, 0.1);
 }
 
+/* BOTTONI */
 .search-container button {
     padding: 12px 20px;
     margin: 5px;
@@ -87,6 +93,7 @@ header p {
     transform: translateY(-2px);
 }
 
+/* INFO RISULTATI */
 .results-info {
     text-align: center;
     margin-bottom: 20px;
@@ -95,12 +102,14 @@ header p {
     color: #2E86AB;
 }
 
+/* CONTAINER QUIZ */
 .quiz-container {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
+/* MESSAGGIO BENVENUTO */
 .welcome-message {
     background: white;
     padding: 40px;
@@ -114,6 +123,7 @@ header p {
     margin-bottom: 15px;
 }
 
+/* CARD SINGOLO QUIZ */
 .quiz-card {
     border: 2px solid #2E86AB;
     border-radius: 15px;
@@ -139,6 +149,7 @@ header p {
     margin-bottom: 15px;
 }
 
+/* CONTAINER IMMAGINE */
 .quiz-figure {
     background-color: #f8f9fa;
     padding: 15px;
@@ -148,6 +159,7 @@ header p {
     border: 2px dashed #2E86AB;
 }
 
+/* OPZIONI RISPOSTA */
 .quiz-options {
     display: flex;
     flex-direction: column;
@@ -164,6 +176,7 @@ header p {
     gap: 10px;
 }
 
+/* RISPOSTA CORRETTA */
 .option.correct {
     background-color: #d4edda;
     border-color: #28a745;
@@ -182,7 +195,7 @@ header p {
     font-size: 18px;
 }
 
-/* Mobile responsive */
+/* RESPONSIVE DESIGN - MOBILE */
 @media (max-width: 768px) {
     .container {
         padding: 15px;
@@ -206,7 +219,7 @@ header p {
     }
 }
 
-/* PWA Install button (nascosta di default) */
+/* PWA INSTALL BUTTON (nascosto di default) */
 .install-btn {
     position: fixed;
     bottom: 20px;

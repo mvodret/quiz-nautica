@@ -1,6 +1,6 @@
 # 🚢 Quiz Nautica
 
-Progressive Web App per i quiz della patente nautica con ricerca per parole chiave.
+Progressive Web App per i quiz della patente nautica con ricerca per parole chiave e supporto completo per le immagini.
 
 ## 🌐 App Live
 **[Apri l'app →](https://mvodret.github.io/quiz-nautica/)**
@@ -8,6 +8,7 @@ Progressive Web App per i quiz della patente nautica con ricerca per parole chia
 ## 📱 Caratteristiche
 
 - ✅ **1472 quiz** della patente nautica
+- 🖼️ **103 quiz con immagini** integrate (mostrate tra domanda e risposte)
 - 🔍 **Ricerca intelligente** per parole chiave
 - 📱 **Mobile-friendly** - ottimizzata per iPhone
 - 🚀 **PWA** - installabile come app nativa
@@ -25,7 +26,14 @@ Progressive Web App per i quiz della patente nautica con ricerca per parole chia
 - HTML5, CSS3, JavaScript vanilla
 - Progressive Web App (PWA)
 - Responsive design
+- Base64 image encoding per le figure
 - GitHub Pages hosting
+
+## 🔄 Prossimi Miglioramenti
+
+- [ ] Rimuovere il limite di 20 quiz visualizzati
+- [ ] Controllare e correggere l'allineamento delle immagini
+- [ ] Migliorare la ricerca con filtri avanzati
 
 ---
 

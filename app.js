@@ -75,15 +75,8 @@ class QuizApp {
         
         this.resultsInfo.textContent = `🔍 Trovati ${quizzes.length} quiz per "${searchTerm}"`;
         
-        // Mostra massimo 20 quiz per performance
-        const maxQuizzes = Math.min(quizzes.length, 20);
-        const quizzesToShow = quizzes.slice(0, maxQuizzes);
-        
-        if (quizzes.length > 20) {
-            this.resultsInfo.textContent += ` (mostrati i primi ${maxQuizzes})`;
-        }
-        
-        this.quizContainer.innerHTML = quizzesToShow.map(quiz => 
+        // Mostra tutti i quiz trovati (rimosso limite 20)  
+        this.quizContainer.innerHTML = quizzes.map(quiz => 
             this.createQuizCard(quiz)
         ).join('');
     }

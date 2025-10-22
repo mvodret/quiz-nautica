@@ -29,10 +29,18 @@ Progressive Web App per i quiz della patente nautica con ricerca per parole chia
 - Base64 image encoding per le figure
 - GitHub Pages hosting
 
-## 🔄 Prossimi Miglioramenti
+## 🔄 Aggiornamenti Recenti
 
-- [ ] Rimuovere il limite di 20 quiz visualizzati
+- ✅ **Rimosso limite 20 quiz** - Ora vengono mostrati tutti i quiz trovati
+- ✅ **103 immagini integrate** - Visualizzate tra domanda e risposte
+- ✅ **Ricerca illimitata** - Tutti i risultati sempre visibili
+
+## 🚧 Prossimi Miglioramenti
+
+- [ ] **Includere quiz vela** - Aggiungere database quiz patente vela
 - [ ] Controllare e correggere l'allineamento delle immagini
+- [ ] Aggiungere lazy loading per le immagini
+- [ ] Filtri per categoria (motore/vela)
 - [ ] Migliorare la ricerca con filtri avanzati
 
 ---

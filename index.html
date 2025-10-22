@@ -31,26 +31,55 @@
         <!-- HEADER: Titolo e descrizione -->
         <header>
             <h1>🚢 Quiz Nautica</h1>
-            <p>Patente Nautica - Ricerca per parole chiave</p>
+            <p>Patente Nautica - Dual Mode App</p>
         </header>
         
-        <!-- SEARCH: Barra di ricerca -->
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Scrivi una parola chiave (es: diesel, vento, lunghezza...)">
-            <button id="searchBtn">🔍 Cerca</button>
-            <button id="clearBtn">🗑️ Pulisci</button>
+        <!-- MODE SELECTION: Selezione modalità quiz -->
+        <div id="mode-selection" class="mode-selection">
+            <h2>🎯 Seleziona il tipo di quiz</h2>
+            <div class="mode-buttons">
+                <button id="selectBase" class="mode-btn mode-base">
+                    <div class="mode-icon">📋</div>
+                    <div class="mode-title">Quiz Base</div>
+                    <div class="mode-desc">Patente Nautica Classica</div>
+                    <div class="mode-stats">1472 domande • A/B/C</div>
+                </button>
+                
+                <button id="selectVela" class="mode-btn mode-vela">
+                    <div class="mode-icon">⛵</div>
+                    <div class="mode-title">Quiz Vela</div>
+                    <div class="mode-desc">Estensione Vela</div>
+                    <div class="mode-stats">250 domande • Vero/Falso</div>
+                </button>
+            </div>
         </div>
         
-        <!-- INFO: Risultati della ricerca -->
-        <div id="results-info" class="results-info"></div>
-        
-        <!-- CONTENT: Container principale per i quiz -->
-        <div id="quiz-container" class="quiz-container">
-            <!-- Messaggio di benvenuto iniziale -->
-            <div class="welcome-message">
-                <h2>Benvenuto! 👋</h2>
-                <p>Cerca una parola chiave per trovare i quiz correlati.</p>
-                <p>Hai a disposizione <strong>1472 quiz</strong> della patente nautica.</p>
+        <!-- QUIZ INTERFACE: Container per ricerca e quiz (nascosto inizialmente) -->
+        <div id="quiz-interface" class="quiz-interface" style="display: none;">
+            <!-- MODE INDICATOR: Indicatore modalità attiva -->
+            <div id="mode-indicator" class="mode-indicator">
+                <span id="current-mode-text"></span>
+                <button id="changeMode" class="change-mode-btn">🔄 Cambia Modalità</button>
+            </div>
+            
+            <!-- SEARCH: Barra di ricerca -->
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Scrivi una parola chiave (es: diesel, vento, lunghezza...)">
+                <button id="searchBtn">🔍 Cerca</button>
+                <button id="clearBtn">🗑️ Pulisci</button>
+            </div>
+            
+            <!-- INFO: Risultati della ricerca -->
+            <div id="results-info" class="results-info"></div>
+            
+            <!-- CONTENT: Container principale per i quiz -->
+            <div id="quiz-container" class="quiz-container">
+                <!-- Messaggio di benvenuto iniziale -->
+                <div class="welcome-message">
+                    <h2>Benvenuto! 👋</h2>
+                    <p>Cerca una parola chiave per trovare i quiz correlati.</p>
+                    <p id="welcome-stats">Hai a disposizione quiz della patente nautica.</p>
+                </div>
             </div>
         </div>
     </div>

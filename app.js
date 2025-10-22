@@ -1,14 +1,30 @@
-// Quiz Nautica App - JavaScript
-// Classe principale che gestisce tutta la logica dell'applicazione
+// Quiz Nautica App - Dual Mode JavaScript
+// ==================================================
 
-class QuizApp {
+class QuizAppDualMode {
     constructor() {
-        // ELEMENTI DOM - Riferimenti agli elementi HTML
+        // STATO APPLICAZIONE
+        this.currentMode = null; // 'base' o 'vela'
+        this.currentData = null; // Dataset attivo
+        
+        // ELEMENTI DOM - Mode Selection
+        this.modeSelection = document.getElementById('mode-selection');
+        this.selectBase = document.getElementById('selectBase');
+        this.selectVela = document.getElementById('selectVela');
+        
+        // ELEMENTI DOM - Quiz Interface
+        this.quizInterface = document.getElementById('quiz-interface');
+        this.modeIndicator = document.getElementById('mode-indicator');
+        this.currentModeText = document.getElementById('current-mode-text');
+        this.changeMode = document.getElementById('changeMode');
+        
+        // ELEMENTI DOM - Search & Results
         this.searchInput = document.getElementById('searchInput');
         this.searchBtn = document.getElementById('searchBtn');
         this.clearBtn = document.getElementById('clearBtn');
         this.quizContainer = document.getElementById('quiz-container');
         this.resultsInfo = document.getElementById('results-info');
+        this.welcomeStats = document.getElementById('welcome-stats');
         
         // Inizializza gli event listeners
         this.initEventListeners();
@@ -17,17 +33,19 @@ class QuizApp {
     // INIZIALIZZAZIONE EVENT LISTENERS
     // --------------------------------
     initEventListeners() {
-        // Click su bottone cerca
-        this.searchBtn.addEventListener('click', () => this.search());
+        // MODE SELECTION LISTENERS
+        this.selectBase.addEventListener('click', () => this.selectMode('base'));
+        this.selectVela.addEventListener('click', () => this.selectMode('vela'));
+        this.changeMode.addEventListener('click', () => this.showModeSelection());
         
-        // Click su bottone pulisci
+        // SEARCH LISTENERS
+        this.searchBtn.addEventListener('click', () => this.search());
         this.clearBtn.addEventListener('click', () => this.clear());
         
-        // RICERCA MENTRE SCRIVI (con debounce per performance)
+        // RICERCA MENTRE SCRIVI (con debounce)
         let timeout;
         this.searchInput.addEventListener('input', () => {
             clearTimeout(timeout);
-            // Aspetta 500ms dopo che l'utente smette di scrivere
             timeout = setTimeout(() => {
                 if (this.searchInput.value.trim().length >= 2) {
                     this.search();
@@ -43,9 +61,44 @@ class QuizApp {
         });
     }
     
+    // SELEZIONE MODALITÀ
+    // ------------------
+    selectMode(mode) {
+        this.currentMode = mode;
+        
+        if (mode === 'base') {
+            this.currentData = QUIZ_DATA_BASE;
+            this.currentModeText.textContent = '📋 Quiz Base - Patente Nautica Classica (A/B/C)';
+            this.welcomeStats.textContent = `Hai a disposizione ${APP_CONFIG.totalBase} quiz base.`;
+        } else {
+            this.currentData = QUIZ_DATA_VELA;
+            this.currentModeText.textContent = '⛵ Quiz Vela - Estensione Vela (Vero/Falso)';
+            this.welcomeStats.textContent = `Hai a disposizione ${APP_CONFIG.totalVela} quiz vela.`;
+        }
+        
+        // Mostra l'interfaccia quiz e nascondi la selezione
+        this.modeSelection.style.display = 'none';
+        this.quizInterface.style.display = 'block';
+        
+        // Reset search
+        this.showWelcomeMessage();
+    }
+    
+    // TORNA ALLA SELEZIONE MODALITÀ
+    // -----------------------------
+    showModeSelection() {
+        this.currentMode = null;
+        this.currentData = null;
+        this.modeSelection.style.display = 'block';
+        this.quizInterface.style.display = 'none';
+        this.searchInput.value = '';
+    }
+    
     // FUNZIONE RICERCA PRINCIPALE
     // ---------------------------
     search() {
+        if (!this.currentData) return;
+        
         const keywords = this.searchInput.value.trim().toLowerCase();
         
         // Se non ci sono keyword, mostra messaggio benvenuto
@@ -55,11 +108,11 @@ class QuizApp {
         }
         
         // Divide le keyword per spazi (ricerca multi-termine)
-        const keywordArray = keywords.split(/\\s+/);
+        const keywordArray = keywords.split(/\s+/);
         
-        // FILTRO QUIZ
-        // -----------
-        const filteredQuizzes = QUIZ_DATA.filter(quiz => {
+        // FILTRO QUIZ DAL DATASET ATTIVO
+        // ------------------------------
+        const filteredQuizzes = this.currentData.filter(quiz => {
             // Crea stringa di ricerca combinando domanda e opzioni
             const searchText = [
                 quiz.question,
@@ -79,9 +132,11 @@ class QuizApp {
     // VISUALIZZAZIONE RISULTATI
     // -------------------------
     displayResults(quizzes, searchTerm) {
+        const modeText = this.currentMode === 'base' ? 'base' : 'vela';
+        
         // CASO: Nessun risultato
         if (quizzes.length === 0) {
-            this.resultsInfo.textContent = `❌ Nessun quiz trovato per "${searchTerm}"`;
+            this.resultsInfo.textContent = `❌ Nessun quiz ${modeText} trovato per "${searchTerm}"`;
             this.quizContainer.innerHTML = `
                 <div class="welcome-message">
                     <h2>Nessun risultato 😔</h2>
@@ -93,50 +148,69 @@ class QuizApp {
         }
         
         // CASO: Risultati trovati
-        this.resultsInfo.textContent = `🔍 Trovati ${quizzes.length} quiz per "${searchTerm}"`;
+        this.resultsInfo.textContent = `🔍 Trovati ${quizzes.length} quiz ${modeText} per "${searchTerm}"`;
         
-        // Mostra tutti i quiz trovati (rimosso limite 20)  
+        // Mostra tutti i quiz trovati con classe CSS specifica per modalità
+        const quizClass = this.currentMode === 'vela' ? 'quiz-vela' : 'quiz-base';
+        this.quizContainer.className = `quiz-container ${quizClass}`;
         this.quizContainer.innerHTML = quizzes.map(quiz => 
             this.createQuizCard(quiz)
         ).join('');
     }
     
-    // CREAZIONE CARD SINGOLO QUIZ
-    // ----------------------------
+    // CREAZIONE CARD SINGOLO QUIZ (DUAL-MODE)
+    // ----------------------------------------
     createQuizCard(quiz) {
         // GESTIONE IMMAGINE
-        // Se il quiz ha un'immagine, crea l'HTML per mostrarla
         const figureHtml = quiz.figure ? `
             <div class="quiz-figure">
-                <strong style="color: #2E86AB;"> </strong>
-                <img src="${quiz.figure.data}" alt="Figura quiz" style="max-width: 100%; height: auto; border-radius: 8px; margin-top: 10px;">
+                <img src="${quiz.figure.data}" alt="Figura quiz" style="max-width: 100%; height: auto; border-radius: 8px;">
             </div>
         ` : '';
         
-        // GENERAZIONE OPZIONI
-        // Crea HTML per ogni opzione di risposta
-        const optionsHtml = quiz.options.map((option, index) => {
-            const letter = String.fromCharCode(65 + index); // A, B, C
-            const correctClass = option.correct ? 'correct' : '';
-            const icon = option.correct ? '✅' : '❌';
-            
-            return `
-                <div class="option ${correctClass}">
-                    <span class="option-label">${letter})</span>
-                    <span class="option-text">${option.text}</span>
-                    <span class="option-icon">${icon}</span>
-                </div>
-            `;
-        }).join('');
+        // GENERAZIONE OPZIONI DIFFERENZIATE
+        let optionsHtml = '';
         
-        // Icona per quiz con immagine
+        if (this.currentMode === 'vela') {
+            // QUIZ VELA: Solo Vero/Falso
+            optionsHtml = quiz.options.map((option, index) => {
+                const correctClass = option.correct ? 'correct' : '';
+                const typeClass = option.text === 'VERO' ? 'vero' : 'falso';
+                const icon = option.correct ? '✅' : '❌';
+                
+                return `
+                    <div class="option ${correctClass} ${typeClass}">
+                        <span class="option-text">${option.text}</span>
+                        <span class="option-icon">${icon}</span>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            // QUIZ BASE: A/B/C classico
+            optionsHtml = quiz.options.map((option, index) => {
+                const letter = String.fromCharCode(65 + index); // A, B, C
+                const correctClass = option.correct ? 'correct' : '';
+                const icon = option.correct ? '✅' : '❌';
+                
+                return `
+                    <div class="option ${correctClass}">
+                        <span class="option-label">${letter})</span>
+                        <span class="option-text">${option.text}</span>
+                        <span class="option-icon">${icon}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Icone e testo specifici per modalità
+        const modeIcon = this.currentMode === 'vela' ? '⛵' : '🚢';
         const hasImage = quiz.figure ? '🖼️' : '';
         
         // ASSEMBLY CARD COMPLETA
         return `
             <div class="quiz-card">
                 <div class="quiz-header">
-                    🚢 Quiz ${quiz.id} ${hasImage}
+                    ${modeIcon} Quiz ${quiz.id} ${hasImage}
                 </div>
                 <div class="quiz-question">
                     ${quiz.question}
@@ -156,31 +230,39 @@ class QuizApp {
         this.showWelcomeMessage();
     }
     
-    // MESSAGGIO BENVENUTO
-    // -------------------
+    // MESSAGGIO BENVENUTO DUAL-MODE
+    // ------------------------------
     showWelcomeMessage() {
         this.resultsInfo.textContent = '';
+        this.quizContainer.className = 'quiz-container'; // Reset class
+        
+        if (!this.currentMode) return;
+        
+        const modeIcon = this.currentMode === 'vela' ? '⛵' : '📋';
+        const modeText = this.currentMode === 'vela' ? 'Vela' : 'Base';
+        const totalQuiz = this.currentMode === 'vela' ? APP_CONFIG.totalVela : APP_CONFIG.totalBase;
+        
         this.quizContainer.innerHTML = `
             <div class="welcome-message">
-                <h2>Benvenuto! 👋</h2>
+                <h2>${modeIcon} Modalità ${modeText} Attiva! 👋</h2>
                 <p>Cerca una parola chiave per trovare i quiz correlati.</p>
-                <p>Hai a disposizione <strong>${QUIZ_DATA.length} quiz</strong> della patente nautica.</p>
+                <p>Hai a disposizione <strong>${totalQuiz} quiz ${modeText.toLowerCase()}</strong>.</p>
                 <p><em>Esempi: diesel, vento, lunghezza, ponte, sentina</em></p>
             </div>
         `;
     }
 }
 
-// INIZIALIZZAZIONE APP
-// --------------------
-// Avvia l'app quando la pagina è completamente caricata
+// INIZIALIZZAZIONE APP DUAL-MODE
+// -------------------------------
 document.addEventListener('DOMContentLoaded', () => {
-    new QuizApp();
+    new QuizAppDualMode();
+    console.log('Quiz Nautica Dual-Mode App inizializzata!');
+    console.log(`Base: ${APP_CONFIG.totalBase} quiz, Vela: ${APP_CONFIG.totalVela} quiz`);
 });
 
 // SERVICE WORKER PER PWA (opzionale)
 // ----------------------------------
-// Registra service worker se supportato dal browser
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')

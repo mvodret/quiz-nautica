@@ -37,6 +37,124 @@ header p {
     opacity: 0.9;
 }
 
+/* MODE SELECTION SCREEN */
+.mode-selection {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.mode-selection h2 {
+    color: #2E86AB;
+    margin-bottom: 30px;
+    font-size: 1.5em;
+}
+
+.mode-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.mode-btn {
+    background: white;
+    border: 3px solid #2E86AB;
+    border-radius: 15px;
+    padding: 25px;
+    width: 280px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.mode-btn:hover {
+    background: #f8f9fa;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.mode-btn.selected {
+    background: #2E86AB;
+    color: white;
+}
+
+.mode-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+}
+
+.mode-title {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #2E86AB;
+    margin-bottom: 8px;
+}
+
+.mode-btn.selected .mode-title {
+    color: white;
+}
+
+.mode-desc {
+    font-size: 1em;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.mode-btn.selected .mode-desc {
+    color: rgba(255,255,255,0.9);
+}
+
+.mode-stats {
+    font-size: 0.9em;
+    color: #888;
+    font-style: italic;
+}
+
+.mode-btn.selected .mode-stats {
+    color: rgba(255,255,255,0.8);
+}
+
+/* MODE INDICATOR */
+.mode-indicator {
+    background: #2E86AB;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.change-mode-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.3s ease;
+}
+
+.change-mode-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* QUIZ INTERFACE - Initially hidden */
+.quiz-interface {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* SEARCH CONTAINER */
 .search-container {
     background: white;
@@ -195,6 +313,54 @@ header p {
     font-size: 18px;
 }
 
+/* OPZIONI VERO/FALSO - Layout specifico per quiz vela */
+.quiz-vela .quiz-options {
+    flex-direction: row;
+    gap: 15px;
+    justify-content: center;
+}
+
+.quiz-vela .option {
+    flex: 1;
+    max-width: 200px;
+    justify-content: center;
+    padding: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.quiz-vela .option.vero {
+    border-color: #28a745;
+    background-color: #f8fff8;
+}
+
+.quiz-vela .option.falso {
+    border-color: #dc3545;
+    background-color: #fff8f8;
+}
+
+.quiz-vela .option.correct.vero {
+    background-color: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.quiz-vela .option.correct.falso {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+.quiz-vela .option-label {
+    display: none; /* Non serve A) B) per Vero/Falso */
+}
+
+.quiz-vela .option-text {
+    text-align: center;
+    font-size: 1.1em;
+}
+
 /* RESPONSIVE DESIGN - MOBILE */
 @media (max-width: 768px) {
     .container {
@@ -216,6 +382,33 @@ header p {
     
     .quiz-card {
         padding: 15px;
+    }
+    
+    /* Mobile - Mode Selection */
+    .mode-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .mode-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    /* Mobile - Mode Indicator */
+    .mode-indicator {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    /* Mobile - Quiz Vela Options */
+    .quiz-vela .quiz-options {
+        flex-direction: column;
+    }
+    
+    .quiz-vela .option {
+        max-width: none;
     }
 }
 

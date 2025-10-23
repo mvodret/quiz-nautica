@@ -198,7 +198,6 @@ header p {
 
 #searchBtn:hover {
     background-color: #1a5f7a;
-    transform: translateY(-2px);
 }
 
 #clearBtn {
@@ -207,110 +206,153 @@ header p {
 }
 
 #clearBtn:hover {
-    background-color: #545b62;
-    transform: translateY(-2px);
+    background-color: #5a6268;
 }
 
-/* INFO RISULTATI */
-.results-info {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #2E86AB;
-}
-
-/* CONTAINER QUIZ */
-.quiz-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* MESSAGGIO BENVENUTO */
+/* WELCOME MESSAGE E INFO */
 .welcome-message {
-    background: white;
-    padding: 40px;
-    border-radius: 15px;
     text-align: center;
+    padding: 40px 20px;
+    background: white;
+    border-radius: 15px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .welcome-message h2 {
     color: #2E86AB;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    font-size: 1.8em;
 }
 
-/* CARD SINGOLO QUIZ */
+.welcome-message p {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    color: #666;
+}
+
+.welcome-message em {
+    color: #2E86AB;
+    font-style: normal;
+    font-weight: 500;
+}
+
+#results-info {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    color: #495057;
+    font-weight: 500;
+    border-left: 4px solid #2E86AB;
+}
+
+/* QUIZ CARDS */
 .quiz-card {
-    border: 2px solid #2E86AB;
-    border-radius: 15px;
-    padding: 20px;
-    margin: 15px 0;
     background: white;
+    margin-bottom: 25px;
+    border-radius: 15px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 25px;
+    transition: transform 0.3s ease;
+}
+
+.quiz-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
 }
 
 .quiz-header {
-    color: #2E86AB;
-    text-align: center;
     font-weight: bold;
-    font-size: 16px;
+    color: #2E86AB;
+    font-size: 1.1em;
     margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #2E86AB;
 }
 
 .quiz-question {
-    font-size: 16px;
-    line-height: 1.4;
-    color: #2E86AB;
-    font-weight: bold;
-    margin-bottom: 15px;
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    line-height: 1.6;
+    color: #333;
+    font-weight: 500;
 }
 
-/* CONTAINER IMMAGINE */
-.quiz-figure {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    text-align: center;
-    border: 2px dashed #2E86AB;
-}
-
-/* OPZIONI RISPOSTA */
+/* OPZIONI DI RISPOSTA - MODALITÀ INTERATTIVA */
 .quiz-options {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    margin-top: 16px;
 }
 
 .option {
-    padding: 12px;
-    border-radius: 8px;
-    border: 2px solid #dee2e6;
-    background-color: #f8f9fa;
     display: flex;
     align-items: center;
-    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
 }
 
-/* RISPOSTA CORRETTA */
-.option.correct {
-    background-color: #d4edda;
-    border-color: #28a745;
+.option:hover {
+    border-color: #007bff;
+    background: #e7f3ff;
+    transform: translateY(-1px);
 }
 
 .option-label {
     font-weight: bold;
-    min-width: 25px;
+    margin-right: 12px;
+    color: #495057;
+    min-width: 24px;
 }
 
 .option-text {
     flex: 1;
+    color: #212529;
+    line-height: 1.4;
 }
 
 .option-icon {
+    margin-left: 12px;
     font-size: 18px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* STATO INIZIALE: ICONE NASCOSTE */
+.option .option-icon {
+    opacity: 0;
+}
+
+/* STATO SELEZIONATO: EVIDENZIA LA SCELTA */
+.option.selected {
+    border-color: #007bff;
+    background: #e7f3ff;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+    transform: scale(1.02);
+}
+
+/* STATO RIVELATO: MOSTRA LE ICONE */
+.option.revealed .option-icon {
+    opacity: 1;
+}
+
+/* STILI DIFFERENZIATI DOPO LA RIVELAZIONE */
+.option.revealed.correct {
+    border-color: #28a745;
+    background: #d4edda;
+}
+
+.option.revealed.wrong {
+    border-color: #dc3545;
+    background: #f8d7da;
 }
 
 /* OPZIONI VERO/FALSO - Layout specifico per quiz vela */
@@ -340,13 +382,13 @@ header p {
     background-color: #fff8f8;
 }
 
-.quiz-vela .option.correct.vero {
+.quiz-vela .option.revealed.correct.vero {
     background-color: #d4edda;
     border-color: #28a745;
     color: #155724;
 }
 
-.quiz-vela .option.correct.falso {
+.quiz-vela .option.revealed.correct.falso {
     background-color: #f8d7da;
     border-color: #dc3545;
     color: #721c24;
@@ -412,18 +454,40 @@ header p {
     }
 }
 
-/* PWA INSTALL BUTTON (nascosto di default) */
-.install-btn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #2E86AB;
-    color: white;
-    border: none;
-    padding: 15px;
+/* PWA E ANIMAZIONI */
+@media (display-mode: standalone) {
+    body {
+        padding-top: env(safe-area-inset-top);
+    }
+}
+
+/* Loading animation per PWA */
+.loading {
+    text-align: center;
+    padding: 20px;
+}
+
+.loading::after {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #2E86AB;
     border-radius: 50%;
-    font-size: 20px;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    display: none;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* HIDE/SHOW CLASSES PER MODALITÀ */
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
 }

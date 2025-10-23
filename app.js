@@ -1,5 +1,5 @@
-// Quiz Nautica App - Dual Mode JavaScript
-// ==================================================
+// Quiz Nautica App - Dual Mode + Interactive JavaScript
+// ======================================================
 
 class QuizAppDualMode {
     constructor() {
@@ -156,10 +156,13 @@ class QuizAppDualMode {
         this.quizContainer.innerHTML = quizzes.map(quiz => 
             this.createQuizCard(quiz)
         ).join('');
+        
+        // AGGIUNGI EVENT LISTENERS PER MODALITÀ INTERATTIVA
+        this.addOptionClickListeners();
     }
     
-    // CREAZIONE CARD SINGOLO QUIZ (DUAL-MODE)
-    // ----------------------------------------
+    // CREAZIONE CARD SINGOLO QUIZ (DUAL-MODE + INTERATTIVO)
+    // -----------------------------------------------------
     createQuizCard(quiz) {
         // GESTIONE IMMAGINE
         const figureHtml = quiz.figure ? `
@@ -168,18 +171,18 @@ class QuizAppDualMode {
             </div>
         ` : '';
         
-        // GENERAZIONE OPZIONI DIFFERENZIATE
+        // GENERAZIONE OPZIONI DIFFERENZIATE CON DATA ATTRIBUTES
         let optionsHtml = '';
         
         if (this.currentMode === 'vela') {
             // QUIZ VELA: Solo Vero/Falso
             optionsHtml = quiz.options.map((option, index) => {
-                const correctClass = option.correct ? 'correct' : '';
+                const correctClass = option.correct ? 'correct' : 'wrong';
                 const typeClass = option.text === 'VERO' ? 'vero' : 'falso';
                 const icon = option.correct ? '✅' : '❌';
                 
                 return `
-                    <div class="option ${correctClass} ${typeClass}">
+                    <div class="option ${correctClass} ${typeClass}" data-quiz-id="${quiz.id}" data-option-index="${index}">
                         <span class="option-text">${option.text}</span>
                         <span class="option-icon">${icon}</span>
                     </div>
@@ -189,11 +192,11 @@ class QuizAppDualMode {
             // QUIZ BASE: A/B/C classico
             optionsHtml = quiz.options.map((option, index) => {
                 const letter = String.fromCharCode(65 + index); // A, B, C
-                const correctClass = option.correct ? 'correct' : '';
+                const correctClass = option.correct ? 'correct' : 'wrong';
                 const icon = option.correct ? '✅' : '❌';
                 
                 return `
-                    <div class="option ${correctClass}">
+                    <div class="option ${correctClass}" data-quiz-id="${quiz.id}" data-option-index="${index}">
                         <span class="option-label">${letter})</span>
                         <span class="option-text">${option.text}</span>
                         <span class="option-icon">${icon}</span>
@@ -223,6 +226,33 @@ class QuizAppDualMode {
         `;
     }
     
+    // GESTIONE CLICK OPZIONI QUIZ - MODALITÀ INTERATTIVA
+    // --------------------------------------------------
+    addOptionClickListeners() {
+        const options = this.quizContainer.querySelectorAll('.option');
+        options.forEach(option => {
+            option.addEventListener('click', (e) => {
+                this.handleOptionClick(e.target.closest('.option'));
+            });
+        });
+    }
+    
+    handleOptionClick(optionElement) {
+        const quizCard = optionElement.closest('.quiz-card');
+        const allOptions = quizCard.querySelectorAll('.option');
+        
+        // Seleziona l'opzione cliccata
+        allOptions.forEach(opt => opt.classList.remove('selected'));
+        optionElement.classList.add('selected');
+        
+        // Rivela tutte le risposte dopo la selezione
+        allOptions.forEach(opt => {
+            opt.classList.add('revealed');
+        });
+        
+        console.log('🎮 Quiz interattivo: opzione selezionata e risposte rivelate');
+    }
+    
     // PULISCI RICERCA
     // ---------------
     clear() {
@@ -230,8 +260,8 @@ class QuizAppDualMode {
         this.showWelcomeMessage();
     }
     
-    // MESSAGGIO BENVENUTO DUAL-MODE
-    // ------------------------------
+    // MESSAGGIO BENVENUTO DUAL-MODE + INTERATTIVO
+    // --------------------------------------------
     showWelcomeMessage() {
         this.resultsInfo.textContent = '';
         this.quizContainer.className = 'quiz-container'; // Reset class
@@ -248,16 +278,24 @@ class QuizAppDualMode {
                 <p>Cerca una parola chiave per trovare i quiz correlati.</p>
                 <p>Hai a disposizione <strong>${totalQuiz} quiz ${modeText.toLowerCase()}</strong>.</p>
                 <p><em>Esempi: diesel, vento, lunghezza, ponte, sentina</em></p>
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <h4>🎮 MODALITÀ QUIZ INTERATTIVA:</h4>
+                    <ul>
+                        <li>✅ Risposte nascoste inizialmente</li>
+                        <li>🖱️ Clicca una risposta per selezionarla</li>
+                        <li>📊 Tutti i flag si rivelano dopo la selezione</li>
+                    </ul>
+                </div>
             </div>
         `;
     }
 }
 
-// INIZIALIZZAZIONE APP DUAL-MODE
-// -------------------------------
+// INIZIALIZZAZIONE APP DUAL-MODE + INTERATTIVA
+// --------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
     new QuizAppDualMode();
-    console.log('Quiz Nautica Dual-Mode App inizializzata!');
+    console.log('🎮 Quiz Nautica Dual-Mode + Interactive App inizializzata!');
     console.log(`Base: ${APP_CONFIG.totalBase} quiz, Vela: ${APP_CONFIG.totalVela} quiz`);
 });
 

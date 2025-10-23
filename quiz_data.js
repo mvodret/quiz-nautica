@@ -1,5 +1,5 @@
 // Quiz data per app nautica - Triple Mode
-// Generato automaticamente il 2025-10-23 23:06:45
+// Generato automaticamente il 2025-10-24 00:07:32
 
 const quiz_data_base = [
   {

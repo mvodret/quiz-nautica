@@ -7,8 +7,8 @@
     <meta name="theme-color" content="#2E86AB">
     
     <!-- Titolo e descrizione -->
-    <title>Quiz Nautica Triple Mode</title>
-    <meta name="description" content="App per quiz patente nautica - Base, Vela, Esame">
+    <title>Quiz Nautica Quad Mode</title>
+    <meta name="description" content="App per quiz patente nautica - Base, Vela, Esame, Esame Vela">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -31,7 +31,7 @@
         <!-- HEADER -->
         <header>
             <h1>🚢 Quiz Nautica</h1>
-            <p>Patente Nautica - Triple Mode</p>
+            <p>Patente Nautica - Quad Mode</p>
         </header>
         
         <!-- MODE SELECTION: Selezione modalità -->
@@ -58,6 +58,13 @@
                     <div class="mode-desc">Simulazione Ufficiale</div>
                     <div class="mode-stats">20 domande • Random</div>
                 </button>
+                
+                <button id="selectExamVela" class="mode-btn mode-exam-vela">
+                    <div class="mode-icon">⛵🎯</div>
+                    <div class="mode-title">Esame Vela</div>
+                    <div class="mode-desc">Simulazione Vela</div>
+                    <div class="mode-stats">5 domande • Random</div>
+                </button>
             </div>
         </div>
         
@@ -79,7 +86,7 @@
             <!-- Info risultati -->
             <div id="results-info" class="results-info"></div>
             
-            <!-- Container per i quiz trovati -->
+            <!-- Container quiz -->
             <div id="quiz-container" class="quiz-container">
                 <div class="welcome-message">
                     <h2>Benvenuto! 👋</h2>
@@ -93,7 +100,7 @@
         <div id="exam-interface" class="exam-interface" style="display: none;">
             <!-- Header modalità -->
             <div class="exam-header">
-                <h2>🎯 Esame Simulato</h2>
+                <h2 id="examTitle">🎯 Esame Simulato</h2>
                 <button id="backToModesFromExam" class="back-btn">🏠 Menu</button>
             </div>
             
@@ -139,18 +146,22 @@
             <div class="results-content">
                 <div class="score-display">
                     <span id="finalScore">0</span>/<span id="totalScore">20</span>
-                    <div class="percentage">(<span id="percentage">0</span>%)</div>
                 </div>
-                <div id="resultMessage" class="result-message"></div>
+                <div id="resultMessage" class="result-message">
+                    <!-- Messaggio dinamico -->
+                </div>
+                <div id="resultDetails" class="result-details">
+                    <!-- Dettagli risposte -->
+                </div>
             </div>
             <div class="results-actions">
-                <button id="newExam" class="restart-btn">🔄 Nuovo Esame</button>
+                <button id="newExam" class="restart-btn">🎯 Nuovo Esame</button>
                 <button id="backToModesFromResults" class="back-btn">🏠 Menu Principale</button>
             </div>
         </div>
     </div>
     
-    <!-- SCRIPTS -->
+    <!-- SCRIPTS: File JavaScript -->
     <script src="quiz_data.js"></script>
     <script src="app.js"></script>
 </body>

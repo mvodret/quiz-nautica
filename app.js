@@ -1,9 +1,9 @@
-// Quiz App Triple Mode - Nautica COMPLETO
-// Supporta: Ricerca INTERATTIVA (Base/Vela) + Esame Simulato
+// Quiz App Quad Mode - Nautica COMPLETO
+// Supporta: Ricerca INTERATTIVA (Base/Vela) + Esame Simulato + Esame Vela
 
-class QuizAppTripleMode {
+class QuizAppQuadMode {
     constructor() {
-        this.currentMode = 'base'; // base, vela, exam
+        this.currentMode = 'base'; // base, vela, exam, examVela
         this.currentQuestions = [];
         this.currentQuestionIndex = 0;
         this.score = 0;
@@ -25,17 +25,18 @@ class QuizAppTripleMode {
             return;
         }
         
-        console.log('Quiz App Triple Mode inizializzata');
+        console.log('Quiz App Quad Mode inizializzata');
         console.log(`Quiz Base: ${quiz_data_base.length} domande`);
         console.log(`Quiz Vela: ${quiz_data_vela ? quiz_data_vela.length : 0} domande`);
         console.log('Exam Schema:', exam_schema);
     }
     
     bindEvents() {
-        // Mode selection
+        // Mode selection - QUATTRO modalità
         document.getElementById('selectBase')?.addEventListener('click', () => this.startMode('base'));
         document.getElementById('selectVela')?.addEventListener('click', () => this.startMode('vela'));
         document.getElementById('selectExam')?.addEventListener('click', () => this.startMode('exam'));
+        document.getElementById('selectExamVela')?.addEventListener('click', () => this.startMode('examVela'));
         
         // Search interface
         document.getElementById('searchBtn')?.addEventListener('click', () => this.performSearch());
@@ -47,8 +48,8 @@ class QuizAppTripleMode {
         
         // Exam interface
         document.getElementById('nextQuestion')?.addEventListener('click', () => this.nextQuestion());
-        document.getElementById('restartExam')?.addEventListener('click', () => this.startMode('exam'));
-        document.getElementById('newExam')?.addEventListener('click', () => this.startMode('exam'));
+        document.getElementById('restartExam')?.addEventListener('click', () => this.startMode(this.currentMode));
+        document.getElementById('newExam')?.addEventListener('click', () => this.startMode(this.currentMode));
         document.getElementById('backToModesFromExam')?.addEventListener('click', () => this.showModeSelection());
         document.getElementById('backToModesFromResults')?.addEventListener('click', () => this.showModeSelection());
         
@@ -92,8 +93,11 @@ class QuizAppTripleMode {
             // Modalità ricerca
             this.showSearchInterface();
         } else if (mode === 'exam') {
-            // Modalità esame
+            // Modalità esame standard
             this.startExam();
+        } else if (mode === 'examVela') {
+            // NUOVO: Modalità esame vela
+            this.startExamVela();
         }
     }
     
@@ -244,7 +248,7 @@ class QuizAppTripleMode {
         this.searchResults = [];
     }
     
-    // === MODALITÀ ESAME ===
+    // === MODALITÀ ESAME STANDARD ===
     
     startExam() {
         this.isExamMode = true;
@@ -264,10 +268,14 @@ class QuizAppTripleMode {
         this.score = 0;
         this.userAnswers = [];
         
+        // Aggiorna titolo esame
+        document.getElementById('examTitle').textContent = '🎯 Esame Simulato';
+        document.getElementById('totalQuestions').textContent = '20';
+        
         this.showExamInterface();
         this.displayExamQuestion();
         
-        console.log('Esame generato con successo:', this.currentQuestions.length, 'domande');
+        console.log('Esame Base generato con successo:', this.currentQuestions.length, 'domande');
     }
     
     generateRandomExam() {
@@ -305,6 +313,57 @@ class QuizAppTripleMode {
         
         console.log(`Esame generato: ${examQuestions.length} domande totali`);
         return examQuestions;
+    }
+    
+    // === NUOVA MODALITÀ: ESAME VELA ===
+    
+    startExamVela() {
+        this.isExamMode = true;
+        this.examStartTime = new Date();
+        
+        // Genera esame vela random (5 domande)
+        this.currentQuestions = this.generateRandomExamVela();
+        
+        if (this.currentQuestions.length !== 5) {
+            alert(`Errore: esame vela dovrebbe avere 5 domande, generate ${this.currentQuestions.length}`);
+            console.error('Errore generazione esame vela:', this.currentQuestions.length);
+            this.showModeSelection();
+            return;
+        }
+        
+        this.currentQuestionIndex = 0;
+        this.score = 0;
+        this.userAnswers = [];
+        
+        // Aggiorna titolo esame
+        document.getElementById('examTitle').textContent = '⛵🎯 Esame Vela';
+        document.getElementById('totalQuestions').textContent = '5';
+        
+        this.showExamInterface();
+        this.displayExamQuestion();
+        
+        console.log('Esame Vela generato con successo:', this.currentQuestions.length, 'domande');
+    }
+    
+    generateRandomExamVela() {
+        // Verifica che ci siano domande vela disponibili
+        if (!quiz_data_vela || quiz_data_vela.length < 5) {
+            console.error('Dati vela insufficienti per esame');
+            return [];
+        }
+        
+        // Copia array per non modificare l'originale
+        const availableQuestions = [...quiz_data_vela];
+        
+        // Mescola array
+        this.shuffleArray(availableQuestions);
+        
+        // Prendi le prime 5 domande
+        const selectedQuestions = availableQuestions.slice(0, 5);
+        
+        console.log('Esame Vela generato:', selectedQuestions.length, 'domande selezionate da', quiz_data_vela.length, 'disponibili');
+        
+        return selectedQuestions;
     }
     
     shuffleArray(array) {
@@ -351,7 +410,6 @@ class QuizAppTripleMode {
         
         // Aggiorna progress
         document.getElementById('currentQuestion').textContent = this.currentQuestionIndex + 1;
-        document.getElementById('totalQuestions').textContent = this.currentQuestions.length;
         
         const progress = ((this.currentQuestionIndex + 1) / this.currentQuestions.length) * 100;
         document.getElementById('progressBar').style.width = progress + '%';
@@ -359,8 +417,14 @@ class QuizAppTripleMode {
         // Mostra domanda
         document.getElementById('questionText').textContent = question.question || 'Domanda non disponibile';
         
-        // Mostra categoria
-        document.getElementById('questionCategory').textContent = `Categoria: ${question.category}`;
+        // Mostra categoria (se presente)
+        const categoryEl = document.getElementById('questionCategory');
+        if (question.category) {
+            categoryEl.textContent = `Categoria: ${question.category}`;
+            categoryEl.style.display = 'block';
+        } else {
+            categoryEl.style.display = 'none';
+        }
         
         // Mostra immagine se presente
         const imageContainer = document.getElementById('questionImage');
@@ -371,16 +435,31 @@ class QuizAppTripleMode {
             imageContainer.style.display = 'none';
         }
         
-        // Mostra risposte
+        // Mostra risposte - LAYOUT DIVERSO PER VELA
         const answersContainer = document.getElementById('answers');
         if (answersContainer && question.options) {
-            const letters = ['A', 'B', 'C', 'D'];
-            answersContainer.innerHTML = question.options.map((option, index) => {
-                const optionText = typeof option === 'string' ? option : option.text;
-                return `<div class="answer" data-answer="${letters[index]}">
-                    ${letters[index]}) ${optionText}
-                </div>`;
-            }).join('');
+            if (this.currentMode === 'examVela') {
+                // Layout Vero/Falso per Esame Vela
+                answersContainer.className = 'answers-container';
+                answersContainer.innerHTML = question.options.map((option, index) => {
+                    const optionText = typeof option === 'string' ? option : option.text;
+
+                    const label = index === 0 ? 'VERO' : 'FALSO';
+                    return `<div class="answer" data-answer="${label}">
+                        ${label}
+                    </div>`;
+                }).join('');
+            } else {
+                // Layout normale A/B/C per Esame Base
+                answersContainer.className = 'answers-container';
+                const letters = ['A', 'B', 'C', 'D'];
+                answersContainer.innerHTML = question.options.map((option, index) => {
+                    const optionText = typeof option === 'string' ? option : option.text;
+                    return `<div class="answer" data-answer="${letters[index]}">
+                        ${letters[index]}) ${optionText}
+                    </div>`;
+                }).join('');
+            }
         }
         
         // Reset selezione
@@ -399,82 +478,127 @@ class QuizAppTripleMode {
         document.getElementById('nextQuestion').disabled = false;
         
         // Store answer
-        const selectedAnswer = answerEl.dataset.answer;
-        this.userAnswers[this.currentQuestionIndex] = selectedAnswer;
+        const answerValue = answerEl.dataset.answer;
+        this.userAnswers[this.currentQuestionIndex] = answerValue;
+        
+        console.log(`Risposta selezionata: ${answerValue} per domanda ${this.currentQuestionIndex + 1}`);
     }
     
     nextQuestion() {
+        // Verifica che ci sia una risposta selezionata
+        if (!this.userAnswers[this.currentQuestionIndex]) {
+            alert('Seleziona una risposta prima di continuare');
+            return;
+        }
+        
+        // Prossima domanda o risultati
         if (this.currentQuestionIndex < this.currentQuestions.length - 1) {
             this.currentQuestionIndex++;
             this.displayExamQuestion();
         } else {
-            this.showExamResults();
+            this.finishExam();
         }
     }
     
-    showExamResults() {
-        // Stop timer
+    finishExam() {
+        this.isExamMode = false;
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
         }
         
-        // Calcola score
+        // Calcola punteggio
         this.score = 0;
+        const results = [];
+        
         this.currentQuestions.forEach((question, index) => {
             const userAnswer = this.userAnswers[index];
-            if (userAnswer && question.options) {
-                const userAnswerIndex = ['A', 'B', 'C', 'D'].indexOf(userAnswer);
-                if (userAnswerIndex >= 0 && question.options[userAnswerIndex] && question.options[userAnswerIndex].correct) {
-                    this.score++;
-                }
+            let isCorrect = false;
+            
+            let correctAnswer;
+            if (this.currentMode === 'examVela') {
+                // Per quiz vela: confronta VERO/FALSO
+                const correctOption = question.options.find(opt => opt.correct);
+                correctAnswer = correctOption === question.options[0] ? 'VERO' : 'FALSO';
+                isCorrect = userAnswer === correctAnswer;
+            } else {
+                // Per quiz base: confronta A/B/C
+                const correctIndex = question.options.findIndex(opt => opt.correct);
+                const correctLetter = ['A', 'B', 'C', 'D'][correctIndex];
+                correctAnswer = `${correctLetter}. ${question.options[correctIndex].text}`;
+                isCorrect = userAnswer === correctLetter;
             }
+            
+            if (isCorrect) this.score++;
+            
+            results.push({
+                question: question.question,
+                questionImage: question.figure && question.figure.data ? question.figure.data : null,
+                userAnswer,
+                correctAnswer,
+                isCorrect,
+                questionIndex: index + 1
+            });
         });
         
-        const percentage = Math.round((this.score / this.currentQuestions.length) * 100);
-        
-        // Mostra risultati
+        this.showResults(results);
+    }
+    
+    showResults(results) {
         document.getElementById('exam-interface').style.display = 'none';
         document.getElementById('exam-results').style.display = 'block';
         
+        // Score display
         document.getElementById('finalScore').textContent = this.score;
         document.getElementById('totalScore').textContent = this.currentQuestions.length;
-        document.getElementById('percentage').textContent = percentage;
         
-        // Messaggio risultato
-        let message = '';
-        const examTime = this.examStartTime ? Math.floor((new Date() - this.examStartTime) / 60000) : 0;
-        if (percentage >= 60) {
-            message = `🎉 ESAME SUPERATO! Complimenti, hai risposto correttamente al ${percentage}% delle domande in ${examTime} minuti.`;
+        // Determine pass/fail
+        const percentage = (this.score / this.currentQuestions.length) * 100;
+        // Soglia 80% per tutti gli esami: normale (16/20) e vela (4/5)
+        const passed = percentage >= 80;
+        
+        const resultMessage = document.getElementById('resultMessage');
+        resultMessage.className = `result-message ${passed ? 'passed' : 'failed'}`;
+        
+        if (passed) {
+            resultMessage.innerHTML = `
+                <h3>🎉 Congratulazioni!</h3>
+                <p>Hai superato l'esame con ${percentage.toFixed(1)}%</p>
+                <p>Punteggio: ${this.score}/${this.currentQuestions.length}</p>
+            `;
         } else {
-            message = `❌ Esame non superato. Hai bisogno di almeno il 60% per passare. Continua a studiare!`;
+            resultMessage.innerHTML = `
+                <h3>😔 Non superato</h3>
+                <p>Hai ottenuto ${percentage.toFixed(1)}% (minimo 80%)</p>
+                <p>Punteggio: ${this.score}/${this.currentQuestions.length}</p>
+                <p>Riprova con un nuovo esame!</p>
+            `;
         }
         
-        document.getElementById('resultMessage').textContent = message;
+        // Result details - mostra solo le risposte sbagliate
+        const detailsEl = document.getElementById('resultDetails');
+        const wrongAnswers = results.filter(result => !result.isCorrect);
         
-        console.log(`Esame completato: ${this.score}/${this.currentQuestions.length} (${percentage}%)`);
+        if (wrongAnswers.length === 0) {
+            detailsEl.innerHTML = '<div style="text-align: center; padding: 20px; color: #28a745;"><strong>🎉 Perfetto! Tutte le risposte corrette!</strong></div>';
+        } else {
+            detailsEl.innerHTML = `<h4 style="margin-bottom: 15px;">📝 Domande da rivedere (${wrongAnswers.length}):</h4>` + wrongAnswers.map(result => `
+            <div style="margin-bottom: 20px; padding: 15px; border-left: 3px solid ${result.isCorrect ? '#28a745' : '#dc3545'}; background-color: #f8f9fa;">
+                <strong>Domanda ${result.questionIndex}:</strong><br>
+                <div style="margin: 10px 0; font-size: 16px;">${result.question}</div>
+                ${result.questionImage ? `<div style="margin: 10px 0;"><img src="${result.questionImage}" alt="Immagine domanda" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px;"></div>` : ''}
+                <strong>Tua risposta:</strong> ${result.userAnswer} ${result.isCorrect ? '✅' : '❌'}
+                ${result.isCorrect ? '' : `<br><strong>Risposta corretta:</strong> ${result.correctAnswer} ✅`}
+            </div>
+        `).join('');
+        }
     }
 }
 
-// Inizializza app quando il DOM è pronto
+// INIZIALIZZAZIONE APP
+// --------------------
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, inizializzazione Quiz App Triple Mode...');
-    
-    // Verifica dipendenze
-    if (typeof quiz_data_base === 'undefined') {
-        console.error('quiz_data_base non trovato - assicurati che quiz_data.js sia caricato');
-        alert('Errore: dati quiz non trovati');
-        return;
-    }
-    
-    if (typeof exam_schema === 'undefined') {
-        console.error('exam_schema non trovato');
-        alert('Errore: schema esame non trovato');
-        return;
-    }
-    
-    // Inizializza app
-    window.quizApp = new QuizAppTripleMode();
-    console.log('Quiz App Triple Mode inizializzata con successo');
+    new QuizAppQuadMode();
+    console.log('Quiz App Quad Mode inizializzata con successo');
 });
 
-console.log('Quiz App Triple Mode script caricato');
+console.log('Quiz App Quad Mode script caricato');

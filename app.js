@@ -1,314 +1,480 @@
-// Quiz Nautica App - Dual Mode + Interactive JavaScript
-// ======================================================
+// Quiz App Triple Mode - Nautica COMPLETO
+// Supporta: Ricerca INTERATTIVA (Base/Vela) + Esame Simulato
 
-class QuizAppDualMode {
+class QuizAppTripleMode {
     constructor() {
-        // STATO APPLICAZIONE
-        this.currentMode = null; // 'base' o 'vela'
-        this.currentData = null; // Dataset attivo
+        this.currentMode = 'base'; // base, vela, exam
+        this.currentQuestions = [];
+        this.currentQuestionIndex = 0;
+        this.score = 0;
+        this.userAnswers = [];
+        this.isExamMode = false;
+        this.examStartTime = null;
+        this.searchResults = [];
         
-        // ELEMENTI DOM - Mode Selection
-        this.modeSelection = document.getElementById('mode-selection');
-        this.selectBase = document.getElementById('selectBase');
-        this.selectVela = document.getElementById('selectVela');
-        
-        // ELEMENTI DOM - Quiz Interface
-        this.quizInterface = document.getElementById('quiz-interface');
-        this.modeIndicator = document.getElementById('mode-indicator');
-        this.currentModeText = document.getElementById('current-mode-text');
-        this.changeMode = document.getElementById('changeMode');
-        
-        // ELEMENTI DOM - Search & Results
-        this.searchInput = document.getElementById('searchInput');
-        this.searchBtn = document.getElementById('searchBtn');
-        this.clearBtn = document.getElementById('clearBtn');
-        this.quizContainer = document.getElementById('quiz-container');
-        this.resultsInfo = document.getElementById('results-info');
-        this.welcomeStats = document.getElementById('welcome-stats');
-        
-        // Inizializza gli event listeners
-        this.initEventListeners();
+        this.init();
     }
     
-    // INIZIALIZZAZIONE EVENT LISTENERS
-    // --------------------------------
-    initEventListeners() {
-        // MODE SELECTION LISTENERS
-        this.selectBase.addEventListener('click', () => this.selectMode('base'));
-        this.selectVela.addEventListener('click', () => this.selectMode('vela'));
-        this.changeMode.addEventListener('click', () => this.showModeSelection());
+    init() {
+        this.bindEvents();
+        this.showModeSelection();
         
-        // SEARCH LISTENERS
-        this.searchBtn.addEventListener('click', () => this.search());
-        this.clearBtn.addEventListener('click', () => this.clear());
+        // Verifica dati disponibili
+        if (typeof quiz_data_base === 'undefined') {
+            console.error('quiz_data_base non trovato');
+            return;
+        }
         
-        // RICERCA MENTRE SCRIVI (con debounce)
-        let timeout;
-        this.searchInput.addEventListener('input', () => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                if (this.searchInput.value.trim().length >= 2) {
-                    this.search();
-                }
-            }, 500);
+        console.log('Quiz App Triple Mode inizializzata');
+        console.log(`Quiz Base: ${quiz_data_base.length} domande`);
+        console.log(`Quiz Vela: ${quiz_data_vela ? quiz_data_vela.length : 0} domande`);
+        console.log('Exam Schema:', exam_schema);
+    }
+    
+    bindEvents() {
+        // Mode selection
+        document.getElementById('selectBase')?.addEventListener('click', () => this.startMode('base'));
+        document.getElementById('selectVela')?.addEventListener('click', () => this.startMode('vela'));
+        document.getElementById('selectExam')?.addEventListener('click', () => this.startMode('exam'));
+        
+        // Search interface
+        document.getElementById('searchBtn')?.addEventListener('click', () => this.performSearch());
+        document.getElementById('clearBtn')?.addEventListener('click', () => this.clearSearch());
+        document.getElementById('searchInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.performSearch();
         });
+        document.getElementById('backToModesFromSearch')?.addEventListener('click', () => this.showModeSelection());
         
-        // RICERCA CON ENTER
-        this.searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                this.search();
+        // Exam interface
+        document.getElementById('nextQuestion')?.addEventListener('click', () => this.nextQuestion());
+        document.getElementById('restartExam')?.addEventListener('click', () => this.startMode('exam'));
+        document.getElementById('newExam')?.addEventListener('click', () => this.startMode('exam'));
+        document.getElementById('backToModesFromExam')?.addEventListener('click', () => this.showModeSelection());
+        document.getElementById('backToModesFromResults')?.addEventListener('click', () => this.showModeSelection());
+        
+        // Event delegation per gestire click dinamici
+        document.addEventListener('click', (e) => {
+            // Risposte esame
+            if (e.target.classList.contains('answer')) {
+                this.selectAnswer(e.target);
+            }
+            // Risposte ricerca (interattive)
+            else if (e.target.classList.contains('search-quiz-option')) {
+                this.handleSearchOptionClick(e.target);
             }
         });
     }
     
-    // SELEZIONE MODALITÀ
-    // ------------------
-    selectMode(mode) {
+    showModeSelection() {
+        document.getElementById('mode-selection').style.display = 'block';
+        document.getElementById('search-interface').style.display = 'none';
+        document.getElementById('exam-interface').style.display = 'none';
+        document.getElementById('exam-results').style.display = 'none';
+        
+        // Reset stato
+        this.currentQuestions = [];
+        this.currentQuestionIndex = 0;
+        this.score = 0;
+        this.userAnswers = [];
+        this.isExamMode = false;
+        this.examStartTime = null;
+        this.searchResults = [];
+        
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+        }
+    }
+    
+    startMode(mode) {
         this.currentMode = mode;
         
-        if (mode === 'base') {
-            this.currentData = QUIZ_DATA_BASE;
-            this.currentModeText.textContent = '📋 Quiz Base - Patente Nautica Classica (A/B/C)';
-            this.welcomeStats.textContent = `Hai a disposizione ${APP_CONFIG.totalBase} quiz base.`;
-        } else {
-            this.currentData = QUIZ_DATA_VELA;
-            this.currentModeText.textContent = '⛵ Quiz Vela - Estensione Vela (Vero/Falso)';
-            this.welcomeStats.textContent = `Hai a disposizione ${APP_CONFIG.totalVela} quiz vela.`;
+        if (mode === 'base' || mode === 'vela') {
+            // Modalità ricerca
+            this.showSearchInterface();
+        } else if (mode === 'exam') {
+            // Modalità esame
+            this.startExam();
         }
-        
-        // Mostra l'interfaccia quiz e nascondi la selezione
-        this.modeSelection.style.display = 'none';
-        this.quizInterface.style.display = 'block';
-        
-        // Reset search
-        this.showWelcomeMessage();
     }
     
-    // TORNA ALLA SELEZIONE MODALITÀ
-    // -----------------------------
-    showModeSelection() {
-        this.currentMode = null;
-        this.currentData = null;
-        this.modeSelection.style.display = 'block';
-        this.quizInterface.style.display = 'none';
-        this.searchInput.value = '';
+    showSearchInterface() {
+        document.getElementById('mode-selection').style.display = 'none';
+        document.getElementById('search-interface').style.display = 'block';
+        document.getElementById('exam-interface').style.display = 'none';
+        document.getElementById('exam-results').style.display = 'none';
+        
+        // Aggiorna header
+        const modeText = this.currentMode === 'base' ? 'Quiz Base - Ricerca' : 'Quiz Vela - Ricerca';
+        document.getElementById('currentSearchMode').textContent = modeText;
+        
+        // Aggiorna statistiche
+        const currentData = this.currentMode === 'base' ? quiz_data_base : quiz_data_vela;
+        const statsText = `Hai a disposizione ${currentData.length} quiz della patente nautica ${this.currentMode === 'base' ? 'base' : 'vela'}.`;
+        document.getElementById('welcome-stats').textContent = statsText;
+        
+        // Pulisci ricerca precedente
+        this.clearSearch();
     }
     
-    // FUNZIONE RICERCA PRINCIPALE
-    // ---------------------------
-    search() {
-        if (!this.currentData) return;
-        
-        const keywords = this.searchInput.value.trim().toLowerCase();
-        
-        // Se non ci sono keyword, mostra messaggio benvenuto
-        if (!keywords) {
-            this.showWelcomeMessage();
+    performSearch() {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        if (!query) {
+            alert('Inserisci una parola chiave per la ricerca');
             return;
         }
         
-        // Divide le keyword per spazi (ricerca multi-termine)
-        const keywordArray = keywords.split(/\s+/);
+        const currentData = this.currentMode === 'base' ? quiz_data_base : quiz_data_vela;
         
-        // FILTRO QUIZ DAL DATASET ATTIVO
-        // ------------------------------
-        const filteredQuizzes = this.currentData.filter(quiz => {
-            // Crea stringa di ricerca combinando domanda e opzioni
-            const searchText = [
-                quiz.question,
-                ...quiz.options.map(opt => opt.text)
-            ].join(' ').toLowerCase();
-            
-            // Verifica se almeno una keyword è presente nel testo
-            return keywordArray.some(keyword => 
-                searchText.includes(keyword)
-            );
+        // Cerca nei testi delle domande e delle risposte
+        this.searchResults = currentData.filter(quiz => {
+            const questionMatch = quiz.question.toLowerCase().includes(query);
+            const optionsMatch = quiz.options.some(option => {
+                const optionText = typeof option === 'string' ? option : option.text;
+                return optionText.toLowerCase().includes(query);
+            });
+            return questionMatch || optionsMatch;
         });
         
-        // Mostra i risultati
-        this.displayResults(filteredQuizzes, keywords);
+        this.displaySearchResults(query);
     }
     
-    // VISUALIZZAZIONE RISULTATI
-    // -------------------------
-    displayResults(quizzes, searchTerm) {
-        const modeText = this.currentMode === 'base' ? 'base' : 'vela';
+    displaySearchResults(query) {
+        const resultsInfo = document.getElementById('results-info');
+        const quizContainer = document.getElementById('quiz-container');
         
-        // CASO: Nessun risultato
-        if (quizzes.length === 0) {
-            this.resultsInfo.textContent = `❌ Nessun quiz ${modeText} trovato per "${searchTerm}"`;
-            this.quizContainer.innerHTML = `
-                <div class="welcome-message">
-                    <h2>Nessun risultato 😔</h2>
-                    <p>Prova con altre parole chiave.</p>
-                    <p>Esempi: <em>diesel, vento, lunghezza, ponte, sentina</em></p>
+        resultsInfo.innerHTML = `
+            <div class="search-summary">
+                <strong>Ricerca: "${query}"</strong> - 
+                ${this.searchResults.length} risultati trovati in ${this.currentMode === 'base' ? 'Quiz Base' : 'Quiz Vela'}
+            </div>
+        `;
+        
+        if (this.searchResults.length === 0) {
+            quizContainer.innerHTML = `
+                <div class="no-results">
+                    <h3>❌ Nessun risultato trovato</h3>
+                    <p>Prova con una parola chiave diversa</p>
                 </div>
             `;
             return;
         }
         
-        // CASO: Risultati trovati
-        this.resultsInfo.textContent = `🔍 Trovati ${quizzes.length} quiz ${modeText} per "${searchTerm}"`;
+        // Mostra i risultati con risposte INTERATTIVE
+        let html = '<div class="quiz-list">';
+        this.searchResults.forEach((quiz, index) => {
+            html += `
+                <div class="quiz-item" data-quiz-index="${index}">
+                    <div class="quiz-header">
+                        <h3>Domanda ${index + 1}/${this.searchResults.length}</h3>
+                        ${quiz.category ? `<span class="quiz-category">${quiz.category}</span>` : ''}
+                    </div>
+                    <div class="quiz-question">${quiz.question}</div>
+                    ${quiz.figure && quiz.figure.data ? `<img src="${quiz.figure.data}" alt="Immagine" class="quiz-image">` : ''}
+                    <div class="quiz-options">
+                        ${quiz.options.map((option, optIndex) => {
+                            const optionText = typeof option === 'string' ? option : option.text;
+                            const isCorrect = typeof option === 'string' ? false : option.correct;
+                            const letter = ['A', 'B', 'C', 'D'][optIndex];
+                            return `
+                                <div class="search-quiz-option" 
+                                     data-quiz-index="${index}" 
+                                     data-option-index="${optIndex}"
+                                     data-is-correct="${isCorrect}">
+                                    <strong>${letter})</strong> ${optionText}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div class="quiz-feedback" id="feedback-${index}" style="display: none;"></div>
+                </div>
+            `;
+        });
+        html += '</div>';
         
-        // Mostra tutti i quiz trovati con classe CSS specifica per modalità
-        const quizClass = this.currentMode === 'vela' ? 'quiz-vela' : 'quiz-base';
-        this.quizContainer.className = `quiz-container ${quizClass}`;
-        this.quizContainer.innerHTML = quizzes.map(quiz => 
-            this.createQuizCard(quiz)
-        ).join('');
-        
-        // AGGIUNGI EVENT LISTENERS PER MODALITÀ INTERATTIVA
-        this.addOptionClickListeners();
+        quizContainer.innerHTML = html;
     }
     
-    // CREAZIONE CARD SINGOLO QUIZ (DUAL-MODE + INTERATTIVO)
-    // -----------------------------------------------------
-    createQuizCard(quiz) {
-        // GESTIONE IMMAGINE
-        const figureHtml = quiz.figure ? `
-            <div class="quiz-figure">
-                <img src="${quiz.figure.data}" alt="Figura quiz" style="max-width: 100%; height: auto; border-radius: 8px;">
+    // Gestisce il click sulle opzioni di ricerca (interattive)
+    handleSearchOptionClick(optionEl) {
+        const quizIndex = parseInt(optionEl.dataset.quizIndex);
+        const optionIndex = parseInt(optionEl.dataset.optionIndex);
+        const isCorrect = optionEl.dataset.isCorrect === 'true';
+        
+        // Rimuovi selezioni precedenti per questo quiz
+        const quizItem = optionEl.closest('.quiz-item');
+        quizItem.querySelectorAll('.search-quiz-option').forEach(opt => {
+            opt.classList.remove('selected', 'correct', 'incorrect');
+        });
+        
+        // Seleziona l'opzione cliccata
+        optionEl.classList.add('selected');
+        
+        // Mostra tutte le risposte con i colori corretti
+        quizItem.querySelectorAll('.search-quiz-option').forEach(opt => {
+            const optIsCorrect = opt.dataset.isCorrect === 'true';
+            if (optIsCorrect) {
+                opt.classList.add('correct');
+            } else if (opt === optionEl && !isCorrect) {
+                opt.classList.add('incorrect');
+            }
+        });
+        
+        // Mostra feedback
+        const feedbackEl = document.getElementById(`feedback-${quizIndex}`);
+        if (feedbackEl) {
+            feedbackEl.style.display = 'block';
+            if (isCorrect) {
+                feedbackEl.innerHTML = '<div class="feedback-correct">✅ <strong>Corretto!</strong> Ottima risposta.</div>';
+            } else {
+                feedbackEl.innerHTML = '<div class="feedback-incorrect">❌ <strong>Sbagliato!</strong> </div>';
+            }
+        }
+    }
+    
+    clearSearch() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('results-info').innerHTML = '';
+        document.getElementById('quiz-container').innerHTML = `
+            <div class="welcome-message">
+                <h2>Benvenuto! 👋</h2>
+                <p>Cerca una parola chiave per trovare i quiz correlati.</p>
+                <p id="welcome-stats">Hai a disposizione quiz della patente nautica.</p>
             </div>
-        ` : '';
+        `;
+        this.searchResults = [];
+    }
+    
+    // === MODALITÀ ESAME ===
+    
+    startExam() {
+        this.isExamMode = true;
+        this.examStartTime = new Date();
         
-        // GENERAZIONE OPZIONI DIFFERENZIATE CON DATA ATTRIBUTES
-        let optionsHtml = '';
+        // Genera esame random
+        this.currentQuestions = this.generateRandomExam();
         
-        if (this.currentMode === 'vela') {
-            // QUIZ VELA: Solo Vero/Falso
-            optionsHtml = quiz.options.map((option, index) => {
-                const correctClass = option.correct ? 'correct' : 'wrong';
-                const typeClass = option.text === 'VERO' ? 'vero' : 'falso';
-                const icon = option.correct ? '✅' : '❌';
-                
-                return `
-                    <div class="option ${correctClass} ${typeClass}" data-quiz-id="${quiz.id}" data-option-index="${index}">
-                        <span class="option-text">${option.text}</span>
-                        <span class="option-icon">${icon}</span>
-                    </div>
-                `;
-            }).join('');
+        if (this.currentQuestions.length !== 20) {
+            alert(`Errore: esame dovrebbe avere 20 domande, generate ${this.currentQuestions.length}`);
+            console.error('Errore generazione esame:', this.currentQuestions.length);
+            this.showModeSelection();
+            return;
+        }
+        
+        this.currentQuestionIndex = 0;
+        this.score = 0;
+        this.userAnswers = [];
+        
+        this.showExamInterface();
+        this.displayExamQuestion();
+        
+        console.log('Esame generato con successo:', this.currentQuestions.length, 'domande');
+    }
+    
+    generateRandomExam() {
+        const examQuestions = [];
+        const usedQuestions = new Set();
+        
+        console.log('Generazione esame con schema ufficiale...');
+        
+        // Per ogni categoria nell'exam schema
+        for (const [category, requiredCount] of Object.entries(exam_schema)) {
+            // Filtra domande di questa categoria non ancora usate
+            const categoryQuestions = quiz_data_base.filter(q => 
+                q.category === category && !usedQuestions.has(q.id)
+            );
+            
+            if (categoryQuestions.length < requiredCount) {
+                console.warn(`Attenzione: categoria "${category}" ha solo ${categoryQuestions.length} domande disponibili, ne servono ${requiredCount}`);
+            }
+            
+            // Mescola e seleziona il numero richiesto
+            this.shuffleArray(categoryQuestions);
+            const selected = categoryQuestions.slice(0, requiredCount);
+            
+            // Aggiungi all'esame e marca come usate
+            selected.forEach(q => {
+                examQuestions.push(q);
+                usedQuestions.add(q.id);
+            });
+            
+            console.log(`${category}: selezionate ${selected.length}/${requiredCount} domande`);
+        }
+        
+        // Mescola l'ordine finale delle domande nell'esame
+        this.shuffleArray(examQuestions);
+        
+        console.log(`Esame generato: ${examQuestions.length} domande totali`);
+        return examQuestions;
+    }
+    
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+    
+    showExamInterface() {
+        document.getElementById('mode-selection').style.display = 'none';
+        document.getElementById('search-interface').style.display = 'none';
+        document.getElementById('exam-interface').style.display = 'block';
+        document.getElementById('exam-results').style.display = 'none';
+        
+        // Avvia timer
+        this.startExamTimer();
+    }
+    
+    startExamTimer() {
+        const timerEl = document.getElementById('examTimer');
+        if (!timerEl || !this.isExamMode) return;
+        
+        const updateTimer = () => {
+            if (!this.examStartTime || !this.isExamMode) return;
+            
+            const elapsed = new Date() - this.examStartTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            
+            timerEl.textContent = `Tempo: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        };
+        
+        updateTimer();
+        this.timerInterval = setInterval(updateTimer, 1000);
+    }
+    
+    displayExamQuestion() {
+        const question = this.currentQuestions[this.currentQuestionIndex];
+        if (!question) {
+            console.error('Domanda non trovata all\'indice:', this.currentQuestionIndex);
+            return;
+        }
+        
+        // Aggiorna progress
+        document.getElementById('currentQuestion').textContent = this.currentQuestionIndex + 1;
+        document.getElementById('totalQuestions').textContent = this.currentQuestions.length;
+        
+        const progress = ((this.currentQuestionIndex + 1) / this.currentQuestions.length) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+        
+        // Mostra domanda
+        document.getElementById('questionText').textContent = question.question || 'Domanda non disponibile';
+        
+        // Mostra categoria
+        document.getElementById('questionCategory').textContent = `Categoria: ${question.category}`;
+        
+        // Mostra immagine se presente
+        const imageContainer = document.getElementById('questionImage');
+        if (question.figure && question.figure.data) {
+            imageContainer.innerHTML = `<img src="${question.figure.data}" alt="Immagine domanda" style="max-width: 100%; height: auto;">`;
+            imageContainer.style.display = 'block';
         } else {
-            // QUIZ BASE: A/B/C classico
-            optionsHtml = quiz.options.map((option, index) => {
-                const letter = String.fromCharCode(65 + index); // A, B, C
-                const correctClass = option.correct ? 'correct' : 'wrong';
-                const icon = option.correct ? '✅' : '❌';
-                
-                return `
-                    <div class="option ${correctClass}" data-quiz-id="${quiz.id}" data-option-index="${index}">
-                        <span class="option-label">${letter})</span>
-                        <span class="option-text">${option.text}</span>
-                        <span class="option-icon">${icon}</span>
-                    </div>
-                `;
+            imageContainer.style.display = 'none';
+        }
+        
+        // Mostra risposte
+        const answersContainer = document.getElementById('answers');
+        if (answersContainer && question.options) {
+            const letters = ['A', 'B', 'C', 'D'];
+            answersContainer.innerHTML = question.options.map((option, index) => {
+                const optionText = typeof option === 'string' ? option : option.text;
+                return `<div class="answer" data-answer="${letters[index]}">
+                    ${letters[index]}) ${optionText}
+                </div>`;
             }).join('');
         }
         
-        // Icone e testo specifici per modalità
-        const modeIcon = this.currentMode === 'vela' ? '⛵' : '🚢';
-        const hasImage = quiz.figure ? '🖼️' : '';
-        
-        // ASSEMBLY CARD COMPLETA
-        return `
-            <div class="quiz-card">
-                <div class="quiz-header">
-                    ${modeIcon} Quiz ${quiz.id} ${hasImage}
-                </div>
-                <div class="quiz-question">
-                    ${quiz.question}
-                </div>
-                ${figureHtml}
-                <div class="quiz-options">
-                    ${optionsHtml}
-                </div>
-            </div>
-        `;
+        // Reset selezione
+        document.querySelectorAll('.answer').forEach(el => el.classList.remove('selected'));
+        document.getElementById('nextQuestion').disabled = true;
     }
     
-    // GESTIONE CLICK OPZIONI QUIZ - MODALITÀ INTERATTIVA
-    // --------------------------------------------------
-    addOptionClickListeners() {
-        const options = this.quizContainer.querySelectorAll('.option');
-        options.forEach(option => {
-            option.addEventListener('click', (e) => {
-                this.handleOptionClick(e.target.closest('.option'));
-            });
+    selectAnswer(answerEl) {
+        // Remove previous selection
+        document.querySelectorAll('.answer').forEach(el => el.classList.remove('selected'));
+        
+        // Add selection to clicked answer
+        answerEl.classList.add('selected');
+        
+        // Enable next button
+        document.getElementById('nextQuestion').disabled = false;
+        
+        // Store answer
+        const selectedAnswer = answerEl.dataset.answer;
+        this.userAnswers[this.currentQuestionIndex] = selectedAnswer;
+    }
+    
+    nextQuestion() {
+        if (this.currentQuestionIndex < this.currentQuestions.length - 1) {
+            this.currentQuestionIndex++;
+            this.displayExamQuestion();
+        } else {
+            this.showExamResults();
+        }
+    }
+    
+    showExamResults() {
+        // Stop timer
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+        }
+        
+        // Calcola score
+        this.score = 0;
+        this.currentQuestions.forEach((question, index) => {
+            const userAnswer = this.userAnswers[index];
+            if (userAnswer && question.options) {
+                const userAnswerIndex = ['A', 'B', 'C', 'D'].indexOf(userAnswer);
+                if (userAnswerIndex >= 0 && question.options[userAnswerIndex] && question.options[userAnswerIndex].correct) {
+                    this.score++;
+                }
+            }
         });
-    }
-    
-    handleOptionClick(optionElement) {
-        const quizCard = optionElement.closest('.quiz-card');
-        const allOptions = quizCard.querySelectorAll('.option');
         
-        // Seleziona l'opzione cliccata
-        allOptions.forEach(opt => opt.classList.remove('selected'));
-        optionElement.classList.add('selected');
+        const percentage = Math.round((this.score / this.currentQuestions.length) * 100);
         
-        // Rivela tutte le risposte dopo la selezione
-        allOptions.forEach(opt => {
-            opt.classList.add('revealed');
-        });
+        // Mostra risultati
+        document.getElementById('exam-interface').style.display = 'none';
+        document.getElementById('exam-results').style.display = 'block';
         
-        console.log('🎮 Quiz interattivo: opzione selezionata e risposte rivelate');
-    }
-    
-    // PULISCI RICERCA
-    // ---------------
-    clear() {
-        this.searchInput.value = '';
-        this.showWelcomeMessage();
-    }
-    
-    // MESSAGGIO BENVENUTO DUAL-MODE + INTERATTIVO
-    // --------------------------------------------
-    showWelcomeMessage() {
-        this.resultsInfo.textContent = '';
-        this.quizContainer.className = 'quiz-container'; // Reset class
+        document.getElementById('finalScore').textContent = this.score;
+        document.getElementById('totalScore').textContent = this.currentQuestions.length;
+        document.getElementById('percentage').textContent = percentage;
         
-        if (!this.currentMode) return;
+        // Messaggio risultato
+        let message = '';
+        const examTime = this.examStartTime ? Math.floor((new Date() - this.examStartTime) / 60000) : 0;
+        if (percentage >= 60) {
+            message = `🎉 ESAME SUPERATO! Complimenti, hai risposto correttamente al ${percentage}% delle domande in ${examTime} minuti.`;
+        } else {
+            message = `❌ Esame non superato. Hai bisogno di almeno il 60% per passare. Continua a studiare!`;
+        }
         
-        const modeIcon = this.currentMode === 'vela' ? '⛵' : '📋';
-        const modeText = this.currentMode === 'vela' ? 'Vela' : 'Base';
-        const totalQuiz = this.currentMode === 'vela' ? APP_CONFIG.totalVela : APP_CONFIG.totalBase;
+        document.getElementById('resultMessage').textContent = message;
         
-        this.quizContainer.innerHTML = `
-            <div class="welcome-message">
-                <h2>${modeIcon} Modalità ${modeText} Attiva! 👋</h2>
-                <p>Cerca una parola chiave per trovare i quiz correlati.</p>
-                <p>Hai a disposizione <strong>${totalQuiz} quiz ${modeText.toLowerCase()}</strong>.</p>
-                <p><em>Esempi: diesel, vento, lunghezza, ponte, sentina</em></p>
-                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 15px;">
-                    <h4>🎮 MODALITÀ QUIZ INTERATTIVA:</h4>
-                    <ul>
-                        <li>✅ Risposte nascoste inizialmente</li>
-                        <li>🖱️ Clicca una risposta per selezionarla</li>
-                        <li>📊 Tutti i flag si rivelano dopo la selezione</li>
-                    </ul>
-                </div>
-            </div>
-        `;
+        console.log(`Esame completato: ${this.score}/${this.currentQuestions.length} (${percentage}%)`);
     }
 }
 
-// INIZIALIZZAZIONE APP DUAL-MODE + INTERATTIVA
-// --------------------------------------------
+// Inizializza app quando il DOM è pronto
 document.addEventListener('DOMContentLoaded', () => {
-    new QuizAppDualMode();
-    console.log('🎮 Quiz Nautica Dual-Mode + Interactive App inizializzata!');
-    console.log(`Base: ${APP_CONFIG.totalBase} quiz, Vela: ${APP_CONFIG.totalVela} quiz`);
+    console.log('DOM loaded, inizializzazione Quiz App Triple Mode...');
+    
+    // Verifica dipendenze
+    if (typeof quiz_data_base === 'undefined') {
+        console.error('quiz_data_base non trovato - assicurati che quiz_data.js sia caricato');
+        alert('Errore: dati quiz non trovati');
+        return;
+    }
+    
+    if (typeof exam_schema === 'undefined') {
+        console.error('exam_schema non trovato');
+        alert('Errore: schema esame non trovato');
+        return;
+    }
+    
+    // Inizializza app
+    window.quizApp = new QuizAppTripleMode();
+    console.log('Quiz App Triple Mode inizializzata con successo');
 });
 
-// SERVICE WORKER PER PWA (opzionale)
-// ----------------------------------
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-            .then(registration => {
-                console.log('SW registered: ', registration);
-            })
-            .catch(registrationError => {
-                console.log('SW registration failed: ', registrationError);
-            });
-    });
-}
+console.log('Quiz App Triple Mode script caricato');

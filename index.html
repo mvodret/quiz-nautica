@@ -7,8 +7,8 @@
     <meta name="theme-color" content="#2E86AB">
     
     <!-- Titolo e descrizione -->
-    <title>Quiz Nautica</title>
-    <meta name="description" content="App per quiz patente nautica con ricerca per parole chiave">
+    <title>Quiz Nautica Triple Mode</title>
+    <meta name="description" content="App per quiz patente nautica - Base, Vela, Esame">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -28,53 +28,59 @@
 </head>
 <body>
     <div class="container">
-        <!-- HEADER: Titolo e descrizione -->
+        <!-- HEADER -->
         <header>
             <h1>🚢 Quiz Nautica</h1>
-            <p>Patente Nautica - Dual Mode App</p>
+            <p>Patente Nautica - Triple Mode</p>
         </header>
         
-        <!-- MODE SELECTION: Selezione modalità quiz -->
+        <!-- MODE SELECTION: Selezione modalità -->
         <div id="mode-selection" class="mode-selection">
             <h2>🎯 Seleziona il tipo di quiz</h2>
             <div class="mode-buttons">
                 <button id="selectBase" class="mode-btn mode-base">
                     <div class="mode-icon">📋</div>
                     <div class="mode-title">Quiz Base</div>
-                    <div class="mode-desc">Patente Nautica Classica</div>
+                    <div class="mode-desc">Patente Nautica con Ricerca</div>
                     <div class="mode-stats">1472 domande • A/B/C</div>
                 </button>
                 
                 <button id="selectVela" class="mode-btn mode-vela">
                     <div class="mode-icon">⛵</div>
                     <div class="mode-title">Quiz Vela</div>
-                    <div class="mode-desc">Estensione Vela</div>
+                    <div class="mode-desc">Estensione Vela con Ricerca</div>
                     <div class="mode-stats">250 domande • Vero/Falso</div>
+                </button>
+                
+                <button id="selectExam" class="mode-btn mode-exam">
+                    <div class="mode-icon">🎯</div>
+                    <div class="mode-title">Esame Simulato</div>
+                    <div class="mode-desc">Simulazione Ufficiale</div>
+                    <div class="mode-stats">20 domande • Random</div>
                 </button>
             </div>
         </div>
         
-        <!-- QUIZ INTERFACE: Container per ricerca e quiz (nascosto inizialmente) -->
-        <div id="quiz-interface" class="quiz-interface" style="display: none;">
-            <!-- MODE INDICATOR: Indicatore modalità attiva -->
-            <div id="mode-indicator" class="mode-indicator">
-                <span id="current-mode-text"></span>
-                <button id="changeMode" class="change-mode-btn">🔄 Cambia Modalità</button>
+        <!-- SEARCH INTERFACE: Ricerca per Base e Vela -->
+        <div id="search-interface" class="search-interface" style="display: none;">
+            <!-- Header modalità -->
+            <div class="search-header">
+                <h2 id="currentSearchMode">Quiz Mode</h2>
+                <button id="backToModesFromSearch" class="back-btn">🏠 Menu</button>
             </div>
             
-            <!-- SEARCH: Barra di ricerca -->
+            <!-- Barra di ricerca -->
             <div class="search-container">
                 <input type="text" id="searchInput" placeholder="Scrivi una parola chiave (es: diesel, vento, lunghezza...)">
                 <button id="searchBtn">🔍 Cerca</button>
                 <button id="clearBtn">🗑️ Pulisci</button>
             </div>
             
-            <!-- INFO: Risultati della ricerca -->
+            <!-- Info risultati -->
             <div id="results-info" class="results-info"></div>
             
-            <!-- CONTENT: Container principale per i quiz -->
+            <!-- Container per i quiz trovati -->
             <div id="quiz-container" class="quiz-container">
-                <!-- Messaggio di benvenuto iniziale -->
                 <div class="welcome-message">
                     <h2>Benvenuto! 👋</h2>
                     <p>Cerca una parola chiave per trovare i quiz correlati.</p>
@@ -82,10 +88,70 @@
                 </div>
             </div>
         </div>
+        
+        <!-- EXAM INTERFACE: Esame simulato -->
+        <div id="exam-interface" class="exam-interface" style="display: none;">
+            <!-- Header modalità -->
+            <div class="exam-header">
+                <h2>🎯 Esame Simulato</h2>
+                <button id="backToModesFromExam" class="back-btn">🏠 Menu</button>
+            </div>
+            
+            <!-- Timer per esami -->
+            <div id="examTimer" class="exam-timer">
+                Tempo: 00:00
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span>Domanda <span id="currentQuestion">1</span> di <span id="totalQuestions">20</span></span>
+                </div>
+                <div class="progress-bar">
+                    <div id="progressBar" class="progress-fill" style="width: 5%;"></div>
+                </div>
+            </div>
+            
+            <!-- Question Container -->
+            <div class="question-container">
+                <div id="questionCategory" class="question-category"></div>
+                <div id="questionText" class="question-text">Caricamento domanda...</div>
+                <div id="questionImage" class="question-image"></div>
+            </div>
+            
+            <!-- Answers Container -->
+            <div id="answers" class="answers-container">
+                <!-- Le risposte verranno inserite dinamicamente -->
+            </div>
+            
+            <!-- Navigation -->
+            <div class="exam-navigation">
+                <button id="nextQuestion" class="next-btn" disabled>Successiva ➡️</button>
+                <button id="restartExam" class="restart-btn">🔄 Nuovo Esame</button>
+            </div>
+        </div>
+        
+        <!-- RESULTS: Risultati esame -->
+        <div id="exam-results" class="exam-results" style="display: none;">
+            <div class="results-header">
+                <h2>🏁 Risultati Esame</h2>
+            </div>
+            <div class="results-content">
+                <div class="score-display">
+                    <span id="finalScore">0</span>/<span id="totalScore">20</span>
+                    <div class="percentage">(<span id="percentage">0</span>%)</div>
+                </div>
+                <div id="resultMessage" class="result-message"></div>
+            </div>
+            <div class="results-actions">
+                <button id="newExam" class="restart-btn">🔄 Nuovo Esame</button>
+                <button id="backToModesFromResults" class="back-btn">🏠 Menu Principale</button>
+            </div>
+        </div>
     </div>
     
-    <!-- SCRIPTS: File JavaScript -->
-    <script src="quiz_data.js"></script>  <!-- Dati dei quiz -->
-    <script src="app.js"></script>        <!-- Logica applicazione -->
+    <!-- SCRIPTS -->
+    <script src="quiz_data.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
